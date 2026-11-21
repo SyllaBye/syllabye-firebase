@@ -8,8 +8,5 @@
   },
   "keywords": [],
   "author": "",
-  "type": "commonjs",
-  "dependencies": {
-    "csv-parser": "^3.2.1"
-  }
+  "type": "commonjs"
 }
