@@ -20,9 +20,12 @@ function OfferingTable({filters = {}}) {
 
 
     // Component Logic
+    const [loading, setLoading] = useState(true)
+
     const [offerings, setOfferings] = useState([])
-    const [loading, setLoading] = useState(true) 
-    
+    const [cursor, setCursor] = useState(null)
+    const [hasMore, setHasMore] = useState(true)
+
     const [activeDialog, setActiveDialog] = useState(null)
 
 
@@ -30,35 +33,50 @@ function OfferingTable({filters = {}}) {
     useEffect(() => {
         let ignoreResults = false // We may want to ignore the fetch results if the client makes a new request before the current one is done executing
 
-        async function fetchOfferings() {
-            setLoading(true)
+        setOfferings([])
+        setCursor(null)
+        setHasMore(true)
+        
+        fetchOfferings(() => ignoreResults)
 
-            try {
-                const results = await getOfferings({
+        return () => {ignoreResults = true}
+    }, [statusKey, semesterKey, subjectKey, professorKey])
+
+    async function fetchOfferings(ignoreResults = (() => false)) {
+        if (!hasMore) return
+
+        setLoading(true)
+
+        try {
+            const results = await getOfferings({
+                cursor: cursor,
+                filters: {
                     statusKey: statusKey,
                     semesterKey: semesterKey,
                     subjectKey: subjectKey,
                     professorKey: professorKey
-                })
-                if (!ignoreResults) {
-                    console.log(`Num Offerings Loaded: ${results.data.length}`)
-                    setOfferings(results.data)
                 }
-            } catch (error) {
-                if (!ignoreResults) {
-                    console.error("Failed to fetch offerings:", error)
-                }
-            } finally {
-                if (!ignoreResults) {
-                    setLoading(false)
-                }
+            })
+            if (!ignoreResults()) {
+                setOfferings([
+                    ...offerings,
+                    ...results.data.offerings
+                ])
+                setCursor(results.data.cursor)
+                setHasMore(results.data.hasMore)
+            }
+        } catch (error) {
+            if (!ignoreResults()) {
+                console.error("Failed to fetch offerings:", error)
+            }
+        } finally {
+            if (!ignoreResults()) {
+                setLoading(false)
             }
         }
+    }
 
-        fetchOfferings()
 
-        return () => {ignoreResults = true}
-    }, [statusKey, semesterKey, subjectKey, professorKey])
 
     function openDialog(dialogOption, offering) {
         setActiveDialog({
