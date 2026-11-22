@@ -41,6 +41,7 @@ function OfferingTable({filters = {}}) {
                     professorKey: professorKey
                 })
                 if (!ignoreResults) {
+                    console.log(`Num Offerings Loaded: ${results.data.length}`)
                     setOfferings(results.data)
                 }
             } catch (error) {
