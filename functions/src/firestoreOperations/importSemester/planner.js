@@ -47,7 +47,8 @@ function buildPlan(rows, existing, newId) {
         const lookup = offeringLookup(courseKey, row.section);
         const offering = {
             semesterKey,
-            courseKey,
+            courseCode: row.courseCode,
+            subjectKey: row.subject,
             sectionCodeKey: row.section,
             termKey,
             ...(professorKey && { professorKey }),
