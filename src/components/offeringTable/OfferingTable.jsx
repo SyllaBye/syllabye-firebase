@@ -1,7 +1,8 @@
 import { getOfferings } from "@/firebase/functions";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
-import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell } from "@/shadcn/ui/table";
+import { Button } from "@/shadcn/ui/button";
+import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableFooter } from "@/shadcn/ui/table";
 import { Skeleton } from "@/shadcn/ui/skeleton";
 
 import OfferingTableRow from "./OfferingTableRow";
@@ -20,45 +21,67 @@ function OfferingTable({filters = {}}) {
 
 
     // Component Logic
+    const requestId = useRef(0)
+
+    const [loading, setLoading] = useState(true)
+
     const [offerings, setOfferings] = useState([])
-    const [loading, setLoading] = useState(true) 
-    
+    const [cursor, setCursor] = useState(null)
+    const [hasMore, setHasMore] = useState(true)
+
     const [activeDialog, setActiveDialog] = useState(null)
 
 
-
     useEffect(() => {
-        let ignoreResults = false // We may want to ignore the fetch results if the client makes a new request before the current one is done executing
+        setOfferings([])
+        setCursor(null)
+        setHasMore(true)
+        
+        fetchOfferings()
+    }, [statusKey, semesterKey, subjectKey, professorKey])
 
-        async function fetchOfferings() {
-            setLoading(true)
+    async function loadMore() {
+        if (hasMore && !loading) {
+            fetchOfferings(cursor, offerings)
+        }
+    }
 
-            try {
-                const results = await getOfferings({
+    async function fetchOfferings(currentCursor = null, prevOfferings = []) {
+        const currentRequestId = ++requestId.current
+        setLoading(true)
+
+        console.log(statusKey, semesterKey, subjectKey, professorKey, currentCursor)
+
+        try {
+            const results = await getOfferings({
+                cursor: currentCursor,
+                filters: {
                     statusKey: statusKey,
                     semesterKey: semesterKey,
                     subjectKey: subjectKey,
                     professorKey: professorKey
-                })
-                if (!ignoreResults) {
-                    console.log(`Num Offerings Loaded: ${results.data.length}`)
-                    setOfferings(results.data)
                 }
-            } catch (error) {
-                if (!ignoreResults) {
-                    console.error("Failed to fetch offerings:", error)
-                }
-            } finally {
-                if (!ignoreResults) {
-                    setLoading(false)
-                }
+            })
+            if (requestId.current === currentRequestId) {
+                setOfferings([
+                    ...prevOfferings,
+                    ...results.data.offerings
+                ])
+                setCursor(results.data.cursor)
+                setHasMore(results.data.hasMore)
+            }
+        } catch (error) {
+            if (requestId.current === currentRequestId) {
+                console.error("Failed to fetch offerings:", error)
+            }
+        } finally {
+            if (requestId.current === currentRequestId) {
+                setLoading(false)
             }
         }
+    }
 
-        fetchOfferings()
 
-        return () => {ignoreResults = true}
-    }, [statusKey, semesterKey, subjectKey, professorKey])
 
     function openDialog(dialogOption, offering) {
         setActiveDialog({
@@ -78,12 +101,12 @@ function OfferingTable({filters = {}}) {
             <div className="overflow-x-auto">
                 <Table className="w-full max-w-[1600px] min-w-[700px] border-collapse">
                     <colgroup>
-                        <col className="w-[10%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[calc(50%-180px)]" />
-                        <col className="w-[15%]" />
+                        <col className="w-[12%]" />
+                        <col className="w-[12%]" />
+                        <col className="w-[12%]" />
+                        <col className="w-[12%]" />
+                        <col className="w-[calc(40%-180px)]" />
+                        <col className="w-[12%]" />
                         <col className="w-[180px]" />
                     </colgroup>
 
@@ -100,7 +123,7 @@ function OfferingTable({filters = {}}) {
                     </TableHeader>
                     <TableBody>
                         {loading ? (
-                            Array.from({ length: 10 }).map((_, rowIndex) => (
+                            Array.from({ length: 20 }).map((_, rowIndex) => (
                                 <TableRow key={rowIndex}>
                                     {Array.from({ length: 7 }).map((_, cellIndex) => (
                                         <TableCell key={cellIndex}>
@@ -120,6 +143,14 @@ function OfferingTable({filters = {}}) {
                         )}
                     </TableBody>
                 </Table>
+
+                <Button
+                    onClick={loadMore}
+                    variant="outline"
+                    disabled={!hasMore || loading}
+                >
+                    Load More
+                </Button>
             </div>
 
             {activeDialog && (

@@ -1,5 +1,7 @@
 import { getSubjects } from '@/firebase/functions';
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
+
+import { Combobox as ComboboxPrimitive } from "@base-ui/react"; 
 
 import { Combobox, ComboboxContent, ComboboxEmpty, ComboboxInput, ComboboxItem, ComboboxList } from "@/shadcn/ui/combobox"
 import { Skeleton } from "@/shadcn/ui/skeleton";
@@ -38,6 +40,14 @@ function SelectSubject({ value, onValueChange, selectionMode = "optional" }) {
     }, [])
 
 
+    const items = useMemo( // Create Combobox items using subject id as values
+        () => ComboboxPrimitive.createItems(subjects, {
+            getValue: (subject) => subject.id,
+            getLabel: (subject) => subject.id
+        }),
+        [subjects]
+    )
+
     let placeholderText = ``;
     if (selectionMode === "all") {
         placeholderText = `All Subjects`;
@@ -48,12 +58,16 @@ function SelectSubject({ value, onValueChange, selectionMode = "optional" }) {
     // Render JSX
     return (
         <Combobox
-            items={subjects.map((subject) => subject.id)}
+            items={items}
             value={value}
             onValueChange={onValueChange}
-            filter={(subjectId, query) =>
-                subjectId.toLowerCase().includes(query.toLowerCase())
-            }
+            filter={(subject, query) => {
+                const search = query.toLocaleLowerCase().trim()
+                return (
+                    subject.id.toLowerCase().includes(query.toLowerCase()) ||
+                    subject.fields.name.includes(query.toLowerCase())
+                )
+            }}
             autoHighlight
         >
             <ComboboxInput 
@@ -76,9 +90,21 @@ function SelectSubject({ value, onValueChange, selectionMode = "optional" }) {
                         <ComboboxEmpty>No items found.</ComboboxEmpty>
 
                         <ComboboxList>
-                            {(subjectId) => (
-                                <ComboboxItem key={subjectId} value={subjectId}>
-                                    {subjectId}
+                            {(subject) => (
+                                <ComboboxItem 
+                                    key={subject.id} 
+                                    value={subject.id}
+                                    className="py-2"
+                                >
+                                    <div className="flex min-w-0 flex-col gap-0.5">
+                                        <span className="font-medium">
+                                            {subject.id}
+                                        </span>
+
+                                        <span className="truncate text-xs text-muted-foreground">
+                                            {subject.fields.name}
+                                        </span>
+                                    </div>
                                 </ComboboxItem>
                             )}
                         </ComboboxList>
