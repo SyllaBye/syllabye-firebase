@@ -136,8 +136,8 @@ function UploadSyllabusDialog({ offering, onClose }) {
                     </DialogTitle>
                     <div className="space-y-1">
                         <DialogDescription className="mt-0">
-                        {offering.display.subjectCode + "-" 
-                        + offering.display.courseCode + "-"
+                        {offering.fields.subjectKey + "-" 
+                        + offering.fields.courseCode + "-"
                         + offering.fields.sectionCodeKey + " | "
                         + offering.display.courseName}
                         </DialogDescription>

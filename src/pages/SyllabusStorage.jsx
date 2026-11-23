@@ -89,12 +89,6 @@ function SyllabusStorage() {
                         }}
                     />
                 </CardContent>
-
-                <CardFooter className="justify-between border-t bg-muted/20 py-4">
-                    <Button variant="outline">
-                        Load More
-                    </Button>
-                </CardFooter>
             </Card>
         </div>
     );
