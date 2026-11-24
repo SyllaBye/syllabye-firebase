@@ -74,9 +74,11 @@ function SelectProfessor({ value, onValueChange, selectionMode = "optional", fil
             onValueChange={onValueChange}
             filter={(professor, query) => {
                 const search = query.toLowerCase().trim()
+                const fullNameOption1 = `${professor.fields.nameLast}, ${professor.fields.nameFirst}`.toLowerCase()
+                const fullNameOption2 = `${professor.fields.nameFirst} ${professor.fields.nameLast}`.toLowerCase()
                 return (
-                    professor.fields.nameFirst?.toLowerCase().includes(search) ||
-                    professor.fields.nameLast?.toLowerCase().includes(search) ||
+                    fullNameOption1.includes(search) ||
+                    fullNameOption2.includes(search) ||
                     professor.fields.email?.toLowerCase().includes(search)
                 )
             }}
