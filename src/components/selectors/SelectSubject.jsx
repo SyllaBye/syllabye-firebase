@@ -62,10 +62,10 @@ function SelectSubject({ value, onValueChange, selectionMode = "optional" }) {
             value={value}
             onValueChange={onValueChange}
             filter={(subject, query) => {
-                const search = query.toLocaleLowerCase().trim()
+                const search = query.toLowerCase().trim()
                 return (
-                    subject.id.toLowerCase().includes(query.toLowerCase()) ||
-                    subject.fields.name.includes(query.toLowerCase())
+                    subject.id.toLowerCase().includes(search) ||
+                    subject.fields.name.toLowerCase().includes(search)
                 )
             }}
             autoHighlight

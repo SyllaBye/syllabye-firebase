@@ -54,7 +54,7 @@ function parseSemester(value) {
 }
 
 function semesterId(semester) {
-    return `${semester.season.toLowerCase()}${semester.year}`;
+    return `${semester.year}_${ALLOWED_SEASONS.indexOf(semester.season) + 1}`
 }
 
 function semesterName(semester) {

@@ -88,6 +88,49 @@ If the registrar renames a column, update it there.
 - Delete anything, or clear a professor who was removed from a section.
 - Create duplicates: existing courses, users, and offerings are found and reused.
 
+## Generating Firestore indexes
+
+## Generating Firestore indexes
+
+The app's Firestore queries may require composite indexes. The index-generation script creates `firestore.indexes.json` with indexes for every combination of the optional equality filters used by the offerings query.
+
+Run this whenever the offerings query's filters or ordering change.
+
+1. **Generate the index configuration.** Run from the repository root:
+
+   ```bash
+   node scripts/generateFirestoreIndexes.js
+   ```
+
+   This generates `firestore.indexes.json` in the repository root. The script currently generates eight index combinations for the optional `statusKey`, `subjectKey`, and `professorKey` filters. `semesterKey` is excluded from the optional filter list because it is always part of the query's ordering.
+
+   When a field is both an equality filter and an ordering field, the generator places it at the beginning of the index when filtered, while preserving the relative ordering of the remaining fields.
+
+2. **Check the Firebase configuration.** Make sure `firebase.json` points to the generated index file:
+
+   ```json
+   {
+     "firestore": {
+       "rules": "firestore.rules",
+       "indexes": "firestore.indexes.json"
+     }
+   }
+   ```
+
+   If `firebase.json` already contains other settings, preserve them.
+
+3. **Deploy the indexes:**
+
+   ```bash
+   firebase deploy --only firestore:indexes
+   ```
+
+   Wait for the indexes to finish building in the Firebase console before testing queries that depend on them.
+
+4. **Commit the generated configuration.** Include both `scripts/generateFirestoreIndexes.js` and `firestore.indexes.json` in Git. Do not add `firestore.indexes.json` to `.gitignore`.
+
+You do **not** need to regenerate or deploy indexes when importing a new semester. Only do so when the Firestore query structure changes.
+
 ## Testing locally (emulator)
 
 Requires the Firebase CLI, Java, and `npm ci` in `functions/`.

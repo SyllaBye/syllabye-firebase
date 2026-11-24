@@ -1,15 +1,16 @@
 const fs = require("fs");
 
 // Optional equality filters.
-// subjectKey is excluded because it is always part of the ordering.
+// semesterKey is excluded because it is always part of the ordering.
 const filterFields = [
     "statusKey",
-    "semesterKey",
+    "subjectKey",
     "professorKey"
 ];
 
 // Fields used to sort offerings.
 const orderFields = [
+    "semesterKey",
     "subjectKey",
     "courseCode",
     "sectionCodeKey"
@@ -17,13 +18,11 @@ const orderFields = [
 
 const indexes = [];
 
-// Generate every possible combination of optional filters.
 for (let mask = 0; mask < 2 ** filterFields.length; mask++) {
     const selectedFilters = filterFields.filter(
         (_, index) => mask & (1 << index)
     );
 
-    // Add equality-filter fields first, then the remaining sort fields.
     const fields = [
         ...selectedFilters,
         ...orderFields.filter(field => !selectedFilters.includes(field))
@@ -44,7 +43,6 @@ const config = {
     fieldOverrides: []
 };
 
-// Write the generated configuration to the project root.
 fs.writeFileSync(
     "firestore.indexes.json",
     JSON.stringify(config, null, 2)

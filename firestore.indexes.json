@@ -5,46 +5,6 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "subjectKey",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "courseCode",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "sectionCodeKey",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "offerings",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
-          "fieldPath": "statusKey",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "subjectKey",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "courseCode",
-          "order": "ASCENDING"
-        },
-        {
-          "fieldPath": "sectionCodeKey",
-          "order": "ASCENDING"
-        }
-      ]
-    },
-    {
-      "collectionGroup": "offerings",
-      "queryScope": "COLLECTION",
-      "fields": [
-        {
           "fieldPath": "semesterKey",
           "order": "ASCENDING"
         },
@@ -93,7 +53,59 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
+          "fieldPath": "subjectKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "semesterKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "courseCode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sectionCodeKey",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "offerings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "statusKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "subjectKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "semesterKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "courseCode",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "sectionCodeKey",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "offerings",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
           "fieldPath": "professorKey",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "semesterKey",
           "order": "ASCENDING"
         },
         {
@@ -123,6 +135,10 @@
           "order": "ASCENDING"
         },
         {
+          "fieldPath": "semesterKey",
+          "order": "ASCENDING"
+        },
+        {
           "fieldPath": "subjectKey",
           "order": "ASCENDING"
         },
@@ -141,7 +157,7 @@
       "queryScope": "COLLECTION",
       "fields": [
         {
-          "fieldPath": "semesterKey",
+          "fieldPath": "subjectKey",
           "order": "ASCENDING"
         },
         {
@@ -149,7 +165,7 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "subjectKey",
+          "fieldPath": "semesterKey",
           "order": "ASCENDING"
         },
         {
@@ -171,7 +187,7 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "semesterKey",
+          "fieldPath": "subjectKey",
           "order": "ASCENDING"
         },
         {
@@ -179,7 +195,7 @@
           "order": "ASCENDING"
         },
         {
-          "fieldPath": "subjectKey",
+          "fieldPath": "semesterKey",
           "order": "ASCENDING"
         },
         {

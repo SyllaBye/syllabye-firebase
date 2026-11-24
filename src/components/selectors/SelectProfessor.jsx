@@ -62,11 +62,11 @@ function SelectProfessor({ value, onValueChange, selectionMode = "optional", fil
             value={value}
             onValueChange={onValueChange}
             filter={(professor, query) => {
-                const search = query.toLocaleLowerCase().trim()
+                const search = query.toLowerCase().trim()
                 return (
-                    professor.fields.nameFirst?.toLocaleLowerCase().includes(search) ||
-                    professor.fields.nameLast?.toLocaleLowerCase().includes(search) ||
-                    professor.fields.email?.toLocaleLowerCase().includes(search)
+                    professor.fields.nameFirst?.toLowerCase().includes(search) ||
+                    professor.fields.nameLast?.toLowerCase().includes(search) ||
+                    professor.fields.email?.toLowerCase().includes(search)
                 )
             }}
             autoHighlight

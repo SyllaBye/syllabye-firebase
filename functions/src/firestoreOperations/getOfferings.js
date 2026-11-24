@@ -2,7 +2,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { getFirestore, FieldPath } = require("firebase-admin/firestore")
 
 const db = getFirestore()
-const PAGE_SIZE = 20
+
 
 
 exports.getOfferings = onCall(async (request) => {
@@ -24,7 +24,8 @@ exports.getOfferings = onCall(async (request) => {
             semesterKey = null,
             subjectKey = null,
             professorKey = null
-        } = {}
+        } = {},
+        pageSize = 10
     } = request.data ?? {}
 
 
@@ -44,26 +45,37 @@ exports.getOfferings = onCall(async (request) => {
     }
 
 
+    // count how many offerings match the given filters
+    const countQuery = query.count()
+
+
     // order and paginate the offerings
-    query = query.orderBy("subjectKey")
+    query = query.orderBy("semesterKey")
+                .orderBy("subjectKey")
                 .orderBy("courseCode")
                 .orderBy("sectionCodeKey")
                 .orderBy(FieldPath.documentId())
     if (cursor != null) {
         query = query.startAfter (
+            cursor.semesterKey,
             cursor.subjectKey,
             cursor.courseCode,
             cursor.sectionCodeKey,
             cursor.id
         )
     }
-    query = query.limit(PAGE_SIZE + 1) // try to retreive an extra doc to test if more pages exist
+    query = query.limit(pageSize + 1) // try to retreive an extra doc to test if more pages exist
 
 
     // get all of the data we need to craft a response
-    let snapshot = await query.get()
-    const pageDocs = snapshot.docs.slice(0, PAGE_SIZE);
-    const hasMore = snapshot.docs.length > PAGE_SIZE;
+    const [snapshot, countSnapshot] = await Promise.all([
+        query.get(),
+        countQuery.get()
+    ])
+    const pageDocs = snapshot.docs.slice(0, pageSize);
+    const hasMore = snapshot.docs.length > pageSize;
+    const totalCount = countSnapshot.data().count;
+
 
     // get the display data associated with each offering (basically a custom join operation)
     const offerings = await Promise.all(pageDocs.map(async (doc) => {
@@ -106,6 +118,7 @@ exports.getOfferings = onCall(async (request) => {
     // construct a new cursor for the next potential page request
     const lastDoc = pageDocs[pageDocs.length - 1]
     const nextCursor = lastDoc ? {
+        semesterKey: lastDoc.get("semesterKey"),
         subjectKey: lastDoc.get("subjectKey"),
         courseCode: lastDoc.get("courseCode"),
         sectionCodeKey: lastDoc.get("sectionCodeKey"),
@@ -117,6 +130,7 @@ exports.getOfferings = onCall(async (request) => {
     return {
         offerings: offerings,
         cursor: nextCursor,
-        hasMore: hasMore
+        hasMore: hasMore,
+        totalCount: totalCount
     }
 })
