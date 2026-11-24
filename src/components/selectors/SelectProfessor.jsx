@@ -40,12 +40,23 @@ function SelectProfessor({ value, onValueChange, selectionMode = "optional", fil
     }, [filterIsActive])
 
 
+    const sortedProfessors = useMemo(() => {
+        return [...professors].sort((a, b) => {
+            const lastNameComparison = a.fields.nameLast.localeCompare(b.fields.nameLast)
+            if (lastNameComparison !== 0) return lastNameComparison
+
+            const firstNameComparison = a.fields.nameFirst.localeCompare(b.fields.nameFirst)
+            if (firstNameComparison !== 0) return firstNameComparison
+
+            return a.fields.email.localeCompare(b.fields.email)
+        })
+    }, [professors])
     const items = useMemo( // Create Combobox items using professor UUIDs as values
-        () => ComboboxPrimitive.createItems(professors, {
+        () => ComboboxPrimitive.createItems(sortedProfessors, {
             getValue: (professor) => professor.id,
-            getLabel: (professor) => `${professor.fields.nameFirst} ${professor.fields.nameLast}`
+            getLabel: (professor) => `${professor.fields.nameLast}, ${professor.fields.nameFirst}`
         }),
-        [professors]
+        [sortedProfessors]
     )
 
     let placeholderText = ``;
@@ -99,7 +110,7 @@ function SelectProfessor({ value, onValueChange, selectionMode = "optional", fil
                                 >
                                     <div className="flex min-w-0 flex-col gap-0.5">
                                         <span className="font-medium">
-                                            {professor.fields.nameLast} {professor.fields.nameFirst}
+                                            {`${professor.fields.nameLast}, ${professor.fields.nameFirst}`}
                                         </span>
 
                                         <span className="truncate text-xs text-muted-foreground">
