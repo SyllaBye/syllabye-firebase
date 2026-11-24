@@ -15,7 +15,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
             <Button
                 variant={hovering ? "default" : "outline"}
                 size="icon"
-                className="transition-colors duration-300 ease-in-out"
+                className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="Send reminder"
                 onClick={() => onAction("email", offering)}
             >
@@ -25,7 +25,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
             <Button
                 variant={hovering ? "default" : "outline"}
                 size="icon"
-                className="transition-colors duration-300 ease-in-out"
+                className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="Upload syllabus"
                 onClick={() => onAction("upload", offering)}
             >
@@ -35,7 +35,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
             <Button
                 variant={hovering ? "default" : "outline"}
                 size="icon"
-                className="transition-colors duration-300 ease-in-out"
+                className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="View syllabus"
                 onClick={() => onAction("view", offering)}
             >
@@ -45,7 +45,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
             <Button
                 variant={hovering ? "default" : "outline"}
                 size="icon"
-                className="transition-colors duration-300 ease-in-out"
+                className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="Edit offering"
                 onClick={() => onAction("edit", offering)}
             >

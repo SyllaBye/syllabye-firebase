@@ -1,11 +1,11 @@
 import { getOfferings } from "@/firebase/functions";
 import { useEffect, useState, useRef } from "react";
 
-import { Button } from "@/shadcn/ui/button";
 import { Table, TableHeader, TableBody, TableRow, TableHead, TableCell, TableFooter } from "@/shadcn/ui/table";
 import { Skeleton } from "@/shadcn/ui/skeleton";
 
 import OfferingTableRow from "./OfferingTableRow";
+import OfferingTableFooter from "./OfferingTableFooter";
 import OfferingDialog from "./dialogs/OfferingDialog";
 
 
@@ -23,34 +23,53 @@ function OfferingTable({filters = {}}) {
     // Component Logic
     const requestId = useRef(0)
 
-    const [loading, setLoading] = useState(true)
+    const [loading, setLoading] = useState(true)                 // True if the contents of the current page are still loading in
 
-    const [offerings, setOfferings] = useState([])
-    const [cursor, setCursor] = useState(null)
-    const [hasMore, setHasMore] = useState(true)
+    const [offerings, setOfferings] = useState([])               // All of the offerings for the matching the given filters we have saved so far            
+    const [cursor, setCursor] = useState(null)                   // Pagination cursor. Used to query for the next page
 
-    const [activeDialog, setActiveDialog] = useState(null)
+    const [currentPageIndex, setCurrentPageIndex] = useState(0)  // The index of the currently displayed page 
+    const [pageSize, setPageSize] = useState(10)                 // How many offerings to display per page
+    const [matchCount, setMatchCount] = useState(0)              // The number of offerings matching the given filters
+
+    const [activeDialog, setActiveDialog] = useState(null)       // Info about what OfferingTable dialog (if any) is currently open
+
+    const totalPages = Math.ceil(matchCount / pageSize)
 
 
     useEffect(() => {
         setOfferings([])
         setCursor(null)
-        setHasMore(true)
+        setMatchCount(0)
+        setCurrentPageIndex(0)
         
         fetchOfferings()
     }, [statusKey, semesterKey, subjectKey, professorKey])
 
-    async function loadMore() {
-        if (hasMore && !loading) {
-            fetchOfferings(cursor, offerings)
+
+    async function goToPage(pageIndex) {
+        if (pageIndex < 0 || pageIndex >= totalPages) {
+            return // invalid page index
+        }
+
+        const totalLoaded = offerings.length
+        const firstOfferingIndex = pageIndex * pageSize
+        const lastOfferingIndex = firstOfferingIndex + (pageSize - 1)
+
+        setCurrentPageIndex(pageIndex)
+
+        if (lastOfferingIndex >= totalLoaded) // we need to query the database for more offerings
+        {
+            const fetchCount = Math.min(lastOfferingIndex + 1 - totalLoaded, matchCount - totalLoaded)
+            await fetchOfferings(cursor, offerings, fetchCount)
         }
     }
 
-    async function fetchOfferings(currentCursor = null, prevOfferings = []) {
+    async function fetchOfferings(currentCursor = null, prevOfferings = [], fetchCount = 10) {
         const currentRequestId = ++requestId.current
         setLoading(true)
 
-        console.log(statusKey, semesterKey, subjectKey, professorKey, currentCursor)
+        console.log(statusKey, semesterKey, subjectKey, professorKey)
 
         try {
             const results = await getOfferings({
@@ -60,7 +79,8 @@ function OfferingTable({filters = {}}) {
                     semesterKey: semesterKey,
                     subjectKey: subjectKey,
                     professorKey: professorKey
-                }
+                },
+                pageSize: fetchCount
             })
             if (requestId.current === currentRequestId) {
                 setOfferings([
@@ -68,7 +88,7 @@ function OfferingTable({filters = {}}) {
                     ...results.data.offerings
                 ])
                 setCursor(results.data.cursor)
-                setHasMore(results.data.hasMore)
+                setMatchCount(results.data.totalCount)
             }
         } catch (error) {
             if (requestId.current === currentRequestId) {
@@ -80,7 +100,6 @@ function OfferingTable({filters = {}}) {
             }
         }
     }
-
 
 
     function openDialog(dialogOption, offering) {
@@ -121,10 +140,11 @@ function OfferingTable({filters = {}}) {
                             <TableHead className="text-right">Actions</TableHead>
                         </TableRow>
                     </TableHeader>
+
                     <TableBody>
                         {loading ? (
-                            Array.from({ length: 20 }).map((_, rowIndex) => (
-                                <TableRow key={rowIndex}>
+                            Array.from({ length: ((Math.min(((currentPageIndex + 1) * pageSize), matchCount) - (currentPageIndex * pageSize)) || pageSize) }).map((_, rowIndex) => (
+                                <TableRow key={rowIndex} className="h-15">
                                     {Array.from({ length: 7 }).map((_, cellIndex) => (
                                         <TableCell key={cellIndex}>
                                             <Skeleton className="h-6 w-full" />
@@ -132,8 +152,20 @@ function OfferingTable({filters = {}}) {
                                     ))}
                                 </TableRow>
                             ))
+                        ) : offerings.length === 0 ? (
+                            <TableRow>
+                                <TableCell colSpan={7} className="h-32 text-center">
+                                    <div className="flex flex-col items-center gap-2">
+                                        <span className="font-medium">No offerings found</span>
+                                        <span className="text-sm text-muted-foreground">
+                                            No offerings match the selected filters.
+                                            Try adjusting or clearing your filters.
+                                        </span>
+                                    </div>
+                                </TableCell>
+                            </TableRow>
                         ) : (
-                            offerings.map((offering) => (
+                            offerings.slice((currentPageIndex * pageSize), ((currentPageIndex + 1) * pageSize)).map((offering) => (
                                 <OfferingTableRow 
                                     key={offering.id}
                                     offering={offering}
@@ -142,15 +174,21 @@ function OfferingTable({filters = {}}) {
                             ))
                         )}
                     </TableBody>
-                </Table>
 
-                <Button
-                    onClick={loadMore}
-                    variant="outline"
-                    disabled={!hasMore || loading}
-                >
-                    Load More
-                </Button>
+                    <TableFooter>
+                        <OfferingTableFooter
+                            matchCount={matchCount}
+                            currentPageIndex={currentPageIndex}
+                            totalPages={totalPages}
+                            pageSize={pageSize}
+                            onPageChange={goToPage}
+                            onPageSizeChange={(newPageSize) => {
+                                setPageSize(newPageSize)
+                                setCurrentPageIndex(0)
+                            }}
+                        />
+                    </TableFooter>
+                </Table>
             </div>
 
             {activeDialog && (
@@ -163,5 +201,6 @@ function OfferingTable({filters = {}}) {
         </>
     )
 }
+
 
 export default OfferingTable;

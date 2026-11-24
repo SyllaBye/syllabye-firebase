@@ -13,6 +13,7 @@ function OfferingTableRow({ offering, onAction }) {
     return (
         <TableRow
             className="
+                h-15
                 border-b border-border/80
                 odd:bg-background
                 even:bg-muted/20
