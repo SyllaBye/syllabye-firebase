@@ -69,8 +69,6 @@ function OfferingTable({filters = {}}) {
         const currentRequestId = ++requestId.current
         setLoading(true)
 
-        console.log(statusKey, semesterKey, subjectKey, professorKey)
-
         try {
             const results = await getOfferings({
                 cursor: currentCursor,
