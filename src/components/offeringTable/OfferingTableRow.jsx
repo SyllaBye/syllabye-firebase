@@ -13,6 +13,7 @@ function OfferingTableRow({ offering, onAction }) {
     return (
         <TableRow
             className="
+                h-15
                 border-b border-border/80
                 odd:bg-background
                 even:bg-muted/20
@@ -23,8 +24,8 @@ function OfferingTableRow({ offering, onAction }) {
             onMouseLeave={() => setHovering(false)}
         >
             <TableCell>{offering.display.semesterName}</TableCell>
-            <TableCell>{offering.display.subjectCode}</TableCell>
-            <TableCell>{offering.display.courseCode}</TableCell>
+            <TableCell>{offering.fields.subjectKey}</TableCell>
+            <TableCell>{offering.fields.courseCode}</TableCell>
             <TableCell>{offering.fields.sectionCodeKey}</TableCell>
             <TableCell>{offering.display.professorNameLast + ", " + offering.display.professorNameFirst}</TableCell>
             <TableCell>{offering.display.offeringStatusName}</TableCell>
