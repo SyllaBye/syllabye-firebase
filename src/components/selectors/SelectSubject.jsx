@@ -40,12 +40,17 @@ function SelectSubject({ value, onValueChange, selectionMode = "optional" }) {
     }, [])
 
 
+    const sortedSubjects = useMemo(() => {
+        return [...subjects].sort((a, b) => {
+            return a.id.localeCompare(b.id)
+        })
+    }, [subjects])
     const items = useMemo( // Create Combobox items using subject id as values
-        () => ComboboxPrimitive.createItems(subjects, {
+        () => ComboboxPrimitive.createItems(sortedSubjects, {
             getValue: (subject) => subject.id,
             getLabel: (subject) => subject.id
         }),
-        [subjects]
+        [sortedSubjects]
     )
 
     let placeholderText = ``;
