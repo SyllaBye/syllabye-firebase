@@ -27,8 +27,6 @@ export default function FileUpload({
         throw new Error("FileUpload requires an onFileSelect callback.");
     }
 
-    console.log("FileUpload state:", status)
-
     const [files, setFiles] = useState([]);
 
     const selectedFile = files[0]?.file ?? null;

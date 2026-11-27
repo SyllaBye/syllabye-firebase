@@ -65,6 +65,10 @@ function UploadSyllabusDialog({ offering, onClose }) {
 
             // If we made is this far, the upload was a success!
             setUploadStatus("success")
+            
+            // NOTE: Eventually, we may want to make it so that all updates have to come directly from Firebase rather than mutating local state, ensuring that the UI always reflects the source of truth.
+            offering.fields.statusKey = "PENDING_APPROVAL"
+            offering.display.offeringStatusName = "Pending Approval"
         } catch (error) { // this should never happen under normal circumstances!
             setErrorMessage({
                 main: "Upload failed",
@@ -126,7 +130,7 @@ function UploadSyllabusDialog({ offering, onClose }) {
         <Dialog
             open={true}
             onOpenChange={() => {
-                if (allowOutsideClose()) onClose();
+                if (allowOutsideClose()) onClose(offering);
             }}
         >
             <DialogContent showCloseButton={allowOutsideClose()}>

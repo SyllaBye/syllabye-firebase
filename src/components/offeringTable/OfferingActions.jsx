@@ -2,7 +2,7 @@ import { Button } from "@/shadcn/ui/button";
 import { Mail, Upload, Eye, Pencil } from "lucide-react";
 
 
-function OfferingActions({ offering, onAction, hovering = false }) {
+function OfferingActions({ selectDialogOption, hovering = false }) {
     return (
         <div className="
             inline-flex w-fit items-center justify-end gap-1
@@ -17,7 +17,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
                 size="icon"
                 className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="Send reminder"
-                onClick={() => onAction("email", offering)}
+                onClick={() => selectDialogOption("email")}
             >
                 <Mail className="h-4 w-4" />
             </Button>
@@ -27,7 +27,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
                 size="icon"
                 className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="Upload syllabus"
-                onClick={() => onAction("upload", offering)}
+                onClick={() => selectDialogOption("upload")}
             >
                 <Upload className="h-4 w-4" />
             </Button>
@@ -37,7 +37,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
                 size="icon"
                 className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="View syllabus"
-                onClick={() => onAction("view", offering)}
+                onClick={() => selectDialogOption("view")}
             >
                 <Eye className="h-4 w-4" />
             </Button>
@@ -47,7 +47,7 @@ function OfferingActions({ offering, onAction, hovering = false }) {
                 size="icon"
                 className="transition-all duration-300 ease-in-out hover:scale-105"
                 title="Edit offering"
-                onClick={() => onAction("edit", offering)}
+                onClick={() => selectDialogOption("edit")}
             >
                 <Pencil className="h-4 w-4" />
             </Button>

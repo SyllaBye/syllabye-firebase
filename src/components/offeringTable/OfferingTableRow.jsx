@@ -6,7 +6,7 @@ import OfferingActions from "./OfferingActions";
 
 
 
-function OfferingTableRow({ offering, onAction }) {
+function OfferingTableRow({ offering, selectDialogOption }) {
     const [hovering, setHovering] = useState(false);
 
 
@@ -31,8 +31,7 @@ function OfferingTableRow({ offering, onAction }) {
             <TableCell>{offering.display.offeringStatusName}</TableCell>
             <TableCell className="text-right">
                 <OfferingActions 
-                    offering={offering}
-                    onAction={onAction}
+                    selectDialogOption={selectDialogOption}
                     hovering={hovering}
                 />
             </TableCell>
