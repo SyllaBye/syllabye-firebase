@@ -1,5 +1,6 @@
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState, useRef } from "react"
 import { renderAsync } from "docx-preview"
+
 
 function DocxViewer({
     url,
@@ -12,19 +13,60 @@ function DocxViewer({
     const containerRef = useRef(null)
     const pagesRef = useRef([])
 
+    const [documentReady, setDocumentReady] = useState(false) // true when the document is ready to be displayed
 
-    // Calculate page scale, accounting for the surrounding padding.
-    const pageScale = Math.min(
-        1,
-        viewportWidth > 0 ? Math.max(0, viewportWidth - 24) / 816 : 1,
-        viewportHeight > 0 ? Math.max(0, viewportHeight - 24) / 1056 : 1
-    )
+
+    // Display and scale the selected page.
+    function updatePageDisplay() {
+        const pages = pagesRef.current
+
+        // Check if we are safe to display
+        if (!documentReady) {return}
+        if (pages.length === 0) {return} // are we done fetching the document?
+        if (viewportWidth <= 0 || viewportHeight <= 0) {return} // is the viewport container set up?
+
+        // Reset pages to their original dimensions.
+        pages.forEach(page => {
+            page.style.zoom = "1"
+        })
+
+        // Hide all pages except the selected one.
+        pages.forEach((page, index) => {
+            page.style.display = (index === currentPageIndex ? "" : "none")
+        })
+
+        const selectedPage = pages[currentPageIndex]
+
+        if (!selectedPage) {
+            console.error("Selected page does not exist! Page Index:", currentPageIndex)
+            return
+        }
+
+        // Measure the selected page at its original size.
+        const { width, height } = selectedPage.getBoundingClientRect()
+
+        // Calculate the scale needed to fit the viewport.
+        const pageScale = Math.min(
+            1,
+            viewportWidth > 0 ? viewportWidth / width : 1,
+            viewportHeight > 0 ? viewportHeight / height : 1
+        )
+
+        selectedPage.style.zoom = pageScale
+        
+        // Clicking the document changes pages except on the last page. Modify the cursor accordingly
+        selectedPage.style.cursor = currentPageIndex < pages.length - 1 ? "pointer" : "default"
+        
+        // Reveal the document only after scaling is complete.
+        containerRef.current.style.visibility = "visible"
+    }
 
     // Fetch and render DOCX.
     useEffect(() => {
         const controller = new AbortController()
 
         async function loadDocument() {
+            setDocumentReady(false)
             pagesRef.current = []
             onPageCountChange(0)
 
@@ -42,6 +84,7 @@ function DocxViewer({
                 if (controller.signal.aborted) return
 
                 containerRef.current.innerHTML = ""
+                containerRef.current.style.visibility = "hidden"
 
                 await renderAsync(
                     data,
@@ -49,9 +92,7 @@ function DocxViewer({
                     containerRef.current,
                     {
                         breakPages: true,
-                        ignoreLastRenderedPageBreak: false,
-                        pageWidth: 12240,
-                        pageHeight: 15840
+                        ignoreLastRenderedPageBreak: false
                     }
                 )
 
@@ -62,6 +103,8 @@ function DocxViewer({
                 )
 
                 onPageCountChange(pagesRef.current.length)
+
+                setDocumentReady(true)
             } catch (error) {
                 if (error.name !== "AbortError") {
                     console.error("Failed to render DOCX:", error)
@@ -82,22 +125,17 @@ function DocxViewer({
         }
     }, [url, onPageCountChange])
 
-    // Display and scale selected page.
+    // Update page visibility and scale when necessary.
     useEffect(() => {
-        pagesRef.current.forEach((page, index) => {
-            page.style.display = index === currentPageIndex ? "" : "none"
-            page.style.zoom = pageScale
-        })
-    }, [currentPageIndex, pageScale])
+        updatePageDisplay()
+    }, [currentPageIndex, viewportWidth, viewportHeight, documentReady])
 
-
-    // Render JSX
     return (
         <div className="flex min-h-full min-w-full items-center justify-center">
             <style>
                 {`
                     .docx-wrapper {
-                        padding: 12px !important;
+                        padding: 0 !important;
                         display: flex !important;
                         align-items: center !important;
                         justify-content: center !important;
@@ -109,7 +147,6 @@ function DocxViewer({
                         outline: none !important;
                         border: none !important;
                         box-shadow: var(--shadow-md) !important;
-                        cursor: ${currentPageIndex < pagesRef.current.length - 1 ? "pointer" : "default"};
                     }
                 `}
             </style>
@@ -125,5 +162,6 @@ function DocxViewer({
         </div>
     )
 }
+
 
 export default DocxViewer

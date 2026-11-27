@@ -4,10 +4,12 @@ import { Document, Page, pdfjs } from "react-pdf"
 import "react-pdf/dist/Page/AnnotationLayer.css"
 import "react-pdf/dist/Page/TextLayer.css"
 
+
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
     "pdfjs-dist/build/pdf.worker.min.mjs",
     import.meta.url
 ).toString()
+
 
 function PdfViewer({
     url,
@@ -25,7 +27,7 @@ function PdfViewer({
 
     // Fetch PDF.
     useEffect(() => {
-        let cancelled = false
+        const controller = new AbortController() // allows us to abort requests
 
         async function loadPdf() {
             setPdfData(null)
@@ -34,7 +36,9 @@ function PdfViewer({
             onPageCountChange(0)
 
             try {
-                const response = await fetch(url)
+                const response = await fetch(url, {
+                    signal: controller.signal
+                })
 
                 if (!response.ok) {
                     throw new Error("Failed to fetch PDF")
@@ -42,11 +46,11 @@ function PdfViewer({
 
                 const data = await response.arrayBuffer()
 
-                if (cancelled) return
+                if (controller.signal.aborted) return
 
                 setPdfData(data)
             } catch (error) {
-                if (!cancelled) {
+                if (error.name !== "AbortError") {
                     console.error("Failed to load PDF:", error)
                     onPageCountChange(0)
                 }
@@ -55,9 +59,7 @@ function PdfViewer({
 
         loadPdf()
 
-        return () => {
-            cancelled = true
-        }
+        return () => {controller.abort()}
     }, [url, onPageCountChange])
 
     // Get actual dimensions of the selected PDF page.
@@ -82,23 +84,20 @@ function PdfViewer({
             } catch (error) {
                 if (!cancelled) {
                     console.error("Failed to load PDF page:", error)
-                    setPageLoading(false)
                 }
             }
         }
 
         loadPageDimensions()
 
-        return () => {
-            cancelled = true
-        }
+        return () => {cancelled = true}
     }, [pdfDocument, currentPageIndex])
 
-    // Calculate page scale (adjusted for padding)
+    // Calculate page scale
     const pageScale = pageDimensions ? Math.min(
         1,
-        viewportWidth > 0 ? (viewportWidth - 24) / pageDimensions.width : 1,
-        viewportHeight > 0 ? (viewportHeight - 24) / pageDimensions.height : 1
+        viewportWidth > 0 ? (viewportWidth / pageDimensions.width) : 1,
+        viewportHeight > 0 ? (viewportHeight / pageDimensions.height) : 1
     ) : 1
 
     function onDocumentLoadSuccess(pdf) {
@@ -124,7 +123,7 @@ function PdfViewer({
                     error={null}
                 >
                     {numPages > 0 && pageDimensions && (
-                        <div className="flex items-center justify-center p-3">
+                        <div className="flex items-center justify-center">
                             <div 
                                 className={`shadow-md ${currentPageIndex < numPages - 1 ? "cursor-pointer" : ""}`} 
                                 onClick={onClick}
@@ -142,5 +141,6 @@ function PdfViewer({
         </div>
     )
 }
+
 
 export default PdfViewer

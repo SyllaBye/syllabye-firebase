@@ -56,7 +56,7 @@ function SyllabusViewer({
     }
 
     return (
-        <div className="h-full w-full overflow-hidden" ref={viewportRef}>
+        <div className="h-full w-full overflow-hidden p-3" ref={viewportRef}>
             {viewer}
         </div>
     )
