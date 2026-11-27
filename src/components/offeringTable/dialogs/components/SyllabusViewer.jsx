@@ -21,16 +21,27 @@ function SyllabusViewer({
     useEffect(() => {
         if (!viewportRef.current) return
 
-        const observer = new ResizeObserver(([entry]) => {
-            setViewportSize({
-                width: entry.contentRect.width,
-                height: entry.contentRect.height
+        let frameId
+
+        const observer = new ResizeObserver((entries) => {
+            const { width, height } = entries[0].contentRect // we are only viewing one element, so only one entry
+
+            cancelAnimationFrame(frameId)
+
+            frameId = requestAnimationFrame(() => { // only update size state once per animation frame
+                setViewportSize({
+                    width: width,
+                    height: height
+                })
             })
         })
 
         observer.observe(viewportRef.current)
 
-        return () => observer.disconnect()
+        return () => {
+            observer.disconnect()
+            cancelAnimationFrame(frameId)
+        }
     }, [])
 
     const viewerProps = {
@@ -56,7 +67,7 @@ function SyllabusViewer({
     }
 
     return (
-        <div className="h-full w-full overflow-hidden" ref={viewportRef}>
+        <div className="h-full w-full overflow-hidden p-3" ref={viewportRef}>
             {viewer}
         </div>
     )
