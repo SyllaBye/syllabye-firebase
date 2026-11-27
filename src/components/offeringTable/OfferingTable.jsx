@@ -100,14 +100,23 @@ function OfferingTable({filters = {}}) {
     }
 
 
-    function openDialog(dialogOption, offering) {
+    function openDialog(dialogOption, offering, offeringIndex) {
         setActiveDialog({
             option: dialogOption,
-            offering: offering
+            offering: offering,
+            offeringIndex: offeringIndex
         })
     }
 
-    function closeDialog() {
+    function closeDialog(updatedOffering = null) {
+        // update the list of offerings if the dialog updated the offering
+        if (updatedOffering) {
+            let updatedOfferings = offerings
+            updatedOfferings[activeDialog.offeringIndex] = updatedOffering
+            setOfferings(updatedOfferings)
+        }
+
+        // close the dialog
         setActiveDialog(null)
     }
 
@@ -163,11 +172,14 @@ function OfferingTable({filters = {}}) {
                                 </TableCell>
                             </TableRow>
                         ) : (
-                            offerings.slice((currentPageIndex * pageSize), ((currentPageIndex + 1) * pageSize)).map((offering) => (
+                            offerings.slice((currentPageIndex * pageSize), ((currentPageIndex + 1) * pageSize))
+                            .map((offering, index) => (
                                 <OfferingTableRow 
                                     key={offering.id}
                                     offering={offering}
-                                    onAction={openDialog}
+                                    selectDialogOption={(dialogOption) => (
+                                        openDialog(dialogOption, offering, ((currentPageIndex * pageSize) + index))
+                                    )}
                                 />
                             ))
                         )}
