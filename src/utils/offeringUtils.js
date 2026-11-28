@@ -2,8 +2,8 @@
 /**
  * Generates a standardized syllabus filename from an offering.
  *
- * Format: SUBJECT-COURSE-SECTION-PROFESSOR-SEMESTER.pdf
- * Example: CPSC-44000-001-ericpogue-fall2026.pdf
+ * Format: SUBJECT-COURSE-SECTION-PROFESSOR-SEMESTER
+ * Example: CPSC-44000-001-ericpogue-fall2026
  *
  * @param {Object} offering
  * @returns {string}
@@ -28,5 +28,5 @@ export function generateSyllabusFilename(offering) {
 
     const professorName = `${professorNameFirst}${professorNameLast}`.toLowerCase()
 
-    return `${subjectKey}-${courseCode}-${sectionCodeKey}-${professorName}-${season}${year}.pdf`
+    return `${subjectKey}-${courseCode}-${sectionCodeKey}-${professorName}-${season}${year}`
 }
