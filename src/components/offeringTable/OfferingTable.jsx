@@ -23,6 +23,7 @@ function OfferingTable({filters = {}}) {
     // Component Logic
     const requestId = useRef(0)
 
+    const [initialLoading, setInitialLoading] = useState(true)   // True if the contents of a new query are still loading in
     const [loading, setLoading] = useState(true)                 // True if the contents of the current page are still loading in
 
     const [offerings, setOfferings] = useState([])               // All of the offerings for the matching the given filters we have saved so far            
@@ -43,27 +44,30 @@ function OfferingTable({filters = {}}) {
         setMatchCount(0)
         setCurrentPageIndex(0)
         
-        fetchOfferings()
+        setInitialLoading(true)
     }, [statusKey, semesterKey, subjectKey, professorKey])
 
+    useEffect(() => {
+        async function goToPage() {
+            if (currentPageIndex < 0) {return} // invalid page index
 
-    async function goToPage(pageIndex) {
-        if (pageIndex < 0 || pageIndex >= totalPages) {
-            return // invalid page index
+            const totalLoaded = offerings.length
+            const firstOfferingIndex = currentPageIndex * pageSize
+            const lastOfferingIndex = firstOfferingIndex + (pageSize - 1)
+
+            if (lastOfferingIndex >= totalLoaded) // we need to query the database for more offerings
+            {
+                const fetchCount = (lastOfferingIndex + 1 - totalLoaded)
+                await fetchOfferings(cursor, offerings, fetchCount)
+            }
+            setInitialLoading(false)
         }
 
-        const totalLoaded = offerings.length
-        const firstOfferingIndex = pageIndex * pageSize
-        const lastOfferingIndex = firstOfferingIndex + (pageSize - 1)
+        console.log(currentPageIndex, pageSize)
 
-        setCurrentPageIndex(pageIndex)
+        goToPage()
+    }, [currentPageIndex, pageSize, initialLoading])
 
-        if (lastOfferingIndex >= totalLoaded) // we need to query the database for more offerings
-        {
-            const fetchCount = Math.min(lastOfferingIndex + 1 - totalLoaded, matchCount - totalLoaded)
-            await fetchOfferings(cursor, offerings, fetchCount)
-        }
-    }
 
     async function fetchOfferings(currentCursor = null, prevOfferings = [], fetchCount = 10) {
         const currentRequestId = ++requestId.current
@@ -191,7 +195,7 @@ function OfferingTable({filters = {}}) {
                             currentPageIndex={currentPageIndex}
                             totalPages={totalPages}
                             pageSize={pageSize}
-                            onPageChange={goToPage}
+                            onPageChange={setCurrentPageIndex}
                             onPageSizeChange={(newPageSize) => {
                                 setPageSize(newPageSize)
                                 setCurrentPageIndex(0)
