@@ -67,14 +67,18 @@ function ViewSyllabusDialog({ offering, onClose }) {
 
     // Download the individual Syllabus
     function handleDownload() {
+        if (!syllabus?.blob) return
+
+        const extension = (syllabus.contentType === "application/pdf" ? "pdf" : "docx")
+
         const url = URL.createObjectURL(syllabus.blob)
         const link = document.createElement("a")
 
         link.href = url
-        link.download = generateSyllabusFilename(offering)
+        link.download = `${generateSyllabusFilename(offering)}.${extension}`
 
         link.click()
-        setTimeout(() => URL.revokeObjectURL(url), 1000)
+        setTimeout(() => URL.revokeObjectURL(url), 1000) // The delay is for old browsers to have enough time to start the download
     }
 
     // Reset pagination when the document changes.
